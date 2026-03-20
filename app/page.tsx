@@ -1,55 +1,77 @@
-// app/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
 import Tabs from "@/components/Tabs";
 import MatchupsView from "@/components/MatchupsView";
 import PitchersView from "@/components/PitchersView";
-import HittersView from "@/components/HittersView";
+import HittersLeaderboard from "@/components/HittersLeaderboard";
 import TrendsView from "@/components/TrendsView";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
+type Matchup = any;   // replace with your real types
+type Pitcher = any;
+type Hitter = any;
+type Trend = any;
+
+type TabType = "matchups" | "pitchers" | "hitters" | "trends";
+
 export default function HomePage() {
-  const [tab, setTab] = useState<"matchups" | "pitchers" | "hitters" | "trends">("matchups");
+  const [tab, setTab] = useState<TabType>("matchups");
+
+  const [matchups, setMatchups] = useState<Matchup[]>([]);
+  const [pitchers, setPitchers] = useState<Pitcher[]>([]);
+  const [hitters, setHitters] = useState<Hitter[]>([]);
+  const [trends, setTrends] = useState<Trend | null>(null);
+
   const [loading, setLoading] = useState(true);
-  const [matchups, setMatchups] = useState<any[]>([]);
-  const [pitchers, setPitchers] = useState<any[]>([]);
-  const [hitters, setHitters] = useState<any[]>([]);
-  const [trends, setTrends] = useState<any | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function loadData() {
+    async function load() {
       try {
         setLoading(true);
-        const res = await fetch(`${API_BASE}/dashboard`);
-        const data = await res.json();
+        setError(null);
 
-        setMatchups(data.matchups || []);
-        setPitchers(data.pitchers || []);
-        setHitters(data.hitters || []);
-        setTrends(data.trends || null);
-      } catch (e) {
-        console.error("Failed to load dashboard data", e);
+        const [matchupsRes, pitchersRes, hittersRes, trendsRes] =
+          await Promise.all([
+            fetch(`${API_BASE}/matchups`),
+            fetch(`${API_BASE}/pitchers`),
+            fetch(`${API_BASE}/hitters`),
+            fetch(`${API_BASE}/trends`),
+          ]);
+
+        const [matchupsData, pitchersData, hittersData, trendsData] =
+          await Promise.all([
+            matchupsRes.json(),
+            pitchersRes.json(),
+            hittersRes.json(),
+            trendsRes.json(),
+          ]);
+
+        setMatchups(matchupsData.games || matchupsData.matchups || []);
+        setPitchers(pitchersData.pitchers || []);
+        setHitters(hittersData.hitters || []);
+        setTrends(trendsData || null);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load data.");
       } finally {
         setLoading(false);
       }
     }
 
-    loadData();
+    load();
   }, []);
 
   return (
     <main className="min-h-screen bg-black text-white">
-      <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto px-4 py-6">
         {/* Header */}
         <header className="mb-6">
           <h1 className="text-3xl font-bold">MLB Matchups Dashboard</h1>
-          <p className="text-gray-400">
-            Live lineups, hitters, and game insights
-          </p>
-          <p className="text-sm text-gray-500 mt-2">
-            All game times in Eastern Time (ET)
+          <p className="text-sm text-gray-400 mt-1">
+            Daily matchups, pitchers, hitters, and trends.
           </p>
         </header>
 
@@ -58,16 +80,22 @@ export default function HomePage() {
           <Tabs tab={tab} setTab={setTab} />
         </div>
 
+        {/* Loading / Error */}
+        {loading && (
+          <div className="text-gray-400 text-sm">Loading today&apos;s slate…</div>
+        )}
+        {error && (
+          <div className="text-red-500 text-sm mb-4">{error}</div>
+        )}
+
         {/* Content */}
-        {loading ? (
-          <div className="text-gray-400">Loading today&apos;s slate...</div>
-        ) : (
-          <>
+        {!loading && !error && (
+          <div className="space-y-4">
             {tab === "matchups" && <MatchupsView games={matchups} />}
             {tab === "pitchers" && <PitchersView pitchers={pitchers} />}
-            {tab === "hitters" && <HittersView hitters={hitters} />}
+            {tab === "hitters" && <HittersLeaderboard hitters={hitters} />}
             {tab === "trends" && trends && <TrendsView trends={trends} />}
-          </>
+          </div>
         )}
       </div>
     </main>

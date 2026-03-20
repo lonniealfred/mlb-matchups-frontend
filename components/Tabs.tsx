@@ -1,10 +1,12 @@
+type TabType = "matchups" | "pitchers" | "hitters" | "trends";
+
 type TabsProps = {
-  tab: string;
-  setTab: (value: string) => void;
+  tab: TabType;
+  setTab: React.Dispatch<React.SetStateAction<TabType>>;
 };
 
 export default function Tabs({ tab, setTab }: TabsProps) {
-  const tabs = ["matchups", "pitchers", "hitters", "trends"];
+  const tabs: TabType[] = ["matchups", "pitchers", "hitters", "trends"];
 
   return (
     <div className="flex gap-6 text-gray-400 border-b border-gray-800 pb-3">
