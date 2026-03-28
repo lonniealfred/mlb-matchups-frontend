@@ -1,7 +1,5 @@
 "use client";
 
-console.log("Matchups file loaded");
-
 import { useEffect, useState } from "react";
 import MatchupCard from "@/components/MatchupCard";
 
@@ -11,31 +9,20 @@ const API_BASE =
   "http://localhost:8000";
 
 export default function Matchups() {
-  console.log("Matchups component rendered");
-
   const [games, setGames] = useState([]);
-  const [status, setStatus] = useState("loading");
+  const [status, setStatus] = useState<"loading" | "ok" | "error">("loading");
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    console.log("useEffect starting");
-
     async function load() {
       try {
-        console.log("API_BASE =", API_BASE);
-        console.log("Fetching:", `${API_BASE}/dashboard`);
-
         const res = await fetch(`${API_BASE}/dashboard`, {
           cache: "no-store",
         });
 
-        console.log("Response status:", res.status);
-
         if (!res.ok) throw new Error(`API error: ${res.status}`);
 
         const data = await res.json();
-
-        console.log("Response JSON:", data);
 
         setGames(data.games || []);
         setStatus("ok");
