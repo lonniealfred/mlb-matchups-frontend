@@ -79,7 +79,6 @@ export default function HomePage() {
       <div className="mt-6">
         {activeTab === "matchups" && (
           <div className="mt-4">
-            {console.log("Rendering <Matchups />")}
             <Matchups />
           </div>
         )}
