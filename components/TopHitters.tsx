@@ -1,41 +1,58 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import TopHittersCard from "@/components/TopHittersCard";
+import HitterCard from "@/components/HitterCard";
+
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  process.env.NEXT_PUBLIC_API_BASE_URL_LOCAL ||
+  "http://localhost:8000";
 
 export default function TopHitters() {
   const [hitters, setHitters] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [status, setStatus] = useState<"loading" | "ok" | "error">("loading");
 
   useEffect(() => {
-    fetch("/api/dashboard")
-      .then((res) => res.json())
-      .then((data) => {
+    async function load() {
+      try {
+        const res = await fetch(`${API_BASE}/top-hitters`, {
+          cache: "no-store",
+        });
+
+        if (!res.ok) throw new Error(`API error: ${res.status}`);
+
+        const data = await res.json();
         setHitters(data.hitters || []);
-      })
-      .finally(() => setLoading(false));
+        setStatus("ok");
+      } catch (err) {
+        console.error("TopHitters fetch error:", err);
+        setStatus("error");
+      }
+    }
+
+    load();
   }, []);
 
-  if (loading) {
+  if (status === "loading") {
     return (
-      <div className="text-gray-400 text-sm">
+      <div className="text-center text-gray-400 mt-6">
         Loading top hitters…
       </div>
     );
   }
 
-  if (!hitters.length) {
+  if (status === "error") {
     return (
-      <div className="text-gray-400 text-sm">
-        No hitter data available.
+      <div className="text-center text-red-400 mt-6">
+        Error loading top hitters.
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {hitters.map((hitter, i) => (
-        <TopHittersCard key={i} hitters={[hitter]} />
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {hitters.map((hitter: any) => (
+        <HitterCard key={hitter.player_id} hitter={hitter} />
       ))}
     </div>
   );
