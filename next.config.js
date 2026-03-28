@@ -4,7 +4,9 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "a.espncdn.com"
+        hostname: "a.espncdn.com",
+        port: "",
+        pathname: "/i/teamlogos/mlb/**"
       }
     ]
   }

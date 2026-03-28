@@ -1,27 +1,39 @@
-type TabType = "matchups" | "pitchers" | "hitters" | "trends";
+"use client";
 
-type TabsProps = {
-  tab: TabType;
-  setTab: React.Dispatch<React.SetStateAction<TabType>>;
-};
+export default function Tabs(props) {
+  const tab = props.tab ?? props.activeTab;
+  const setTab = props.setTab ?? props.onChange;
 
-export default function Tabs({ tab, setTab }: TabsProps) {
-  const tabs: TabType[] = ["matchups", "pitchers", "hitters", "trends"];
+  const tabs = [
+    { id: "matchups", label: "Matchups" },
+    { id: "pitchers", label: "Pitching" },
+    { id: "hitters", label: "Top Hitters" },
+    { id: "trends", label: "Trends" },
+  ];
 
   return (
-    <div className="flex gap-6 text-gray-400 border-b border-gray-800 pb-3">
-      {tabs.map((t) => (
-        <button
-          key={t}
-          onClick={() => setTab(t)}
-          className={`
-            capitalize pb-1 transition-colors
-            ${tab === t ? "text-white font-semibold border-b-2 border-white" : "hover:text-white"}
-          `}
-        >
-          {t}
-        </button>
-      ))}
+    <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+      {tabs.map((t) => {
+        const isActive = tab === t.id;
+
+        return (
+          <button
+            key={t.id}
+            onClick={() => setTab?.(t.id)}
+            className={`
+              px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap
+              transition-colors
+              ${
+                isActive
+                  ? "bg-white text-black"
+                  : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              }
+            `}
+          >
+            {t.label}
+          </button>
+        );
+      })}
     </div>
   );
 }

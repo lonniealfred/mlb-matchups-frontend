@@ -1,103 +1,107 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Tabs from "@/components/Tabs";
-import MatchupsView from "@/components/MatchupsView";
-import PitchersView from "@/components/PitchersView";
-import HittersLeaderboard from "@/components/HittersLeaderboard";
-import TrendsView from "@/components/TrendsView";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-type Matchup = any;   // replace with your real types
-type Pitcher = any;
-type Hitter = any;
-type Trend = any;
-
-type TabType = "matchups" | "pitchers" | "hitters" | "trends";
+import { useState } from "react";
+import Matchups from "@/components/Matchups";
+import TopHitters from "@/components/TopHitters";
+import Trends from "@/components/Trends";
+import PitchingLeaderboard from "@/components/PitchingLeaderboard";
+import LastUpdated from "@/components/LastUpdated";
 
 export default function HomePage() {
-  const [tab, setTab] = useState<TabType>("matchups");
+  console.log("REAL HomePage rendered");
 
-  const [matchups, setMatchups] = useState<Matchup[]>([]);
-  const [pitchers, setPitchers] = useState<Pitcher[]>([]);
-  const [hitters, setHitters] = useState<Hitter[]>([]);
-  const [trends, setTrends] = useState<Trend | null>(null);
-
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function load() {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const [matchupsRes, pitchersRes, hittersRes, trendsRes] =
-          await Promise.all([
-            fetch(`${API_BASE}/matchups`),
-            fetch(`${API_BASE}/pitchers`),
-            fetch(`${API_BASE}/hitters`),
-            fetch(`${API_BASE}/trends`),
-          ]);
-
-        const [matchupsData, pitchersData, hittersData, trendsData] =
-          await Promise.all([
-            matchupsRes.json(),
-            pitchersRes.json(),
-            hittersRes.json(),
-            trendsRes.json(),
-          ]);
-
-        setMatchups(matchupsData.games || matchupsData.matchups || []);
-        setPitchers(pitchersData.pitchers || []);
-        setHitters(hittersData.hitters || []);
-        setTrends(trendsData || null);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load data.");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    load();
-  }, []);
+  const [activeTab, setActiveTab] = useState("matchups");
 
   return (
-    <main className="min-h-screen bg-black text-white">
-      <div className="max-w-6xl mx-auto px-4 py-6">
-        {/* Header */}
-        <header className="mb-6">
-          <h1 className="text-3xl font-bold">MLB Matchups Dashboard</h1>
-          <p className="text-sm text-gray-400 mt-1">
-            Daily matchups, pitchers, hitters, and trends.
-          </p>
-        </header>
+    <div className="min-h-screen bg-[#0a0a0a] text-white p-4">
+      {/* Header */}
+      <div className="text-center mb-6">
+        <h1 className="text-3xl font-bold tracking-tight">
+          Today’s MLB Matchups
+        </h1>
+        <p className="text-gray-400 mt-1">
+          Live lineups, pitching duels, hitter insights, and stadium analytics
+        </p>
 
-        {/* Tabs */}
-        <div className="mb-6">
-          <Tabs tab={tab} setTab={setTab} />
+        <div className="flex justify-center mt-3">
+          <LastUpdated />
         </div>
+      </div>
 
-        {/* Loading / Error */}
-        {loading && (
-          <div className="text-gray-400 text-sm">Loading today&apos;s slate…</div>
-        )}
-        {error && (
-          <div className="text-red-500 text-sm mb-4">{error}</div>
+      {/* Tabs */}
+      <div className="flex justify-center space-x-4 border-b border-gray-700 pb-2">
+        <button
+          onClick={() => setActiveTab("matchups")}
+          className={`px-4 py-2 text-sm font-medium ${
+            activeTab === "matchups"
+              ? "text-blue-400 border-b-2 border-blue-400"
+              : "text-gray-400"
+          }`}
+        >
+          Matchups
+        </button>
+
+        <button
+          onClick={() => setActiveTab("pitching")}
+          className={`px-4 py-2 text-sm font-medium ${
+            activeTab === "pitching"
+              ? "text-blue-400 border-b-2 border-blue-400"
+              : "text-gray-400"
+          }`}
+        >
+          Pitching
+        </button>
+
+        <button
+          onClick={() => setActiveTab("top-hitters")}
+          className={`px-4 py-2 text-sm font-medium ${
+            activeTab === "top-hitters"
+              ? "text-blue-400 border-b-2 border-blue-400"
+              : "text-gray-400"
+          }`}
+        >
+          Top Hitters
+        </button>
+
+        <button
+          onClick={() => setActiveTab("trends")}
+          className={`px-4 py-2 text-sm font-medium ${
+            activeTab === "trends"
+              ? "text-blue-400 border-b-2 border-blue-400"
+              : "text-gray-400"
+          }`}
+        >
+          Trends
+        </button>
+      </div>
+
+      {/* Tab Content */}
+      <div className="mt-6">
+        {activeTab === "matchups" && (
+          <div className="mt-4">
+            {console.log("Rendering <Matchups />")}
+            <Matchups />
+          </div>
         )}
 
-        {/* Content */}
-        {!loading && !error && (
-          <div className="space-y-4">
-            {tab === "matchups" && <MatchupsView games={matchups} />}
-            {tab === "pitchers" && <PitchersView pitchers={pitchers} />}
-            {tab === "hitters" && <HittersLeaderboard hitters={hitters} />}
-            {tab === "trends" && trends && <TrendsView trends={trends} />}
+        {activeTab === "pitching" && (
+          <div className="mt-4">
+            <PitchingLeaderboard />
+          </div>
+        )}
+
+        {activeTab === "top-hitters" && (
+          <div className="mt-4">
+            <TopHitters />
+          </div>
+        )}
+
+        {activeTab === "trends" && (
+          <div className="mt-4">
+            <Trends />
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }
