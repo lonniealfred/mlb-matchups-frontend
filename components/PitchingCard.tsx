@@ -2,60 +2,55 @@
 
 import { getPitcherTier } from "@/lib/pitchingTiers";
 
-export default function PitchingCard({ pitcher }) {
-  const tier = getPitcherTier(pitcher.score);
+interface Pitcher {
+  name: string;
+  team: string;
+  score: number;
+  score_breakdown: Record<string, number>;
+}
 
-  const b = pitcher.score_breakdown;
+export default function PitchingCard({ pitcher }: { pitcher: Pitcher }) {
+  if (!pitcher) return null;
+
+  const tier = getPitcherTier(pitcher.score);
+  const breakdown = pitcher.score_breakdown || {};
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="text-white font-semibold">{pitcher.name}</div>
-          <div className="text-gray-400 text-sm">
-            {pitcher.team} vs {pitcher.opponent}
-          </div>
-        </div>
-        <div className="text-right">
-          <div className="text-2xl font-bold text-white">
-            {pitcher.score}
-          </div>
-          <div
-            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs text-white ${tier.color}`}
-          >
-            {tier.label}
-          </div>
-        </div>
+    <div className="bg-[#111] border border-gray-800 rounded-xl p-4 shadow-md hover:shadow-lg transition">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-lg font-bold text-white">{pitcher.name}</h2>
+        <span
+          className={`px-3 py-1 rounded-md text-xs font-semibold ${
+            tier.color || "bg-gray-700 text-gray-300"
+          }`}
+        >
+          {tier.label}
+        </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 text-xs text-gray-300">
-        <div>
-          <div className="text-gray-500">Opp Team AVG</div>
-          <div>{pitcher.opponent_team_avg?.toFixed(3) ?? "---"}</div>
-          <div className="text-gray-500">Rule 1</div>
-          <div>{b.rule1_opponent_avg} pts</div>
-        </div>
+      {/* Score */}
+      <div className="text-center mb-4">
+        <p className="text-gray-400 text-xs">Pitcher Score</p>
+        <p className="text-3xl font-bold text-white">{pitcher.score}</p>
+      </div>
 
-        <div>
-          <div className="text-gray-500">ERA (Last 5)</div>
-          <div>{pitcher.era_last5?.toFixed(2) ?? "---"}</div>
-          <div className="text-gray-500">Rule 2</div>
-          <div>{b.rule2_last5_era} pts</div>
-        </div>
+      {/* Breakdown */}
+      <div className="bg-[#0d0d0d] p-3 rounded-lg border border-gray-800">
+        <h3 className="text-sm text-gray-400 mb-2">Score Breakdown</h3>
 
-        <div>
-          <div className="text-gray-500">HR Factor</div>
-          <div>{pitcher.hr_factor ?? "---"}</div>
-          <div className="text-gray-500">Rule 3</div>
-          <div>{b.rule3_stadium_factor} pts</div>
-        </div>
+        <ul className="text-xs text-gray-300 space-y-1">
+          {Object.entries(breakdown).map(([key, value]) => (
+            <li key={key} className="flex justify-between">
+              <span className="capitalize">{key.replace(/_/g, " ")}</span>
+              <span className="font-semibold">{value}</span>
+            </li>
+          ))}
 
-        <div>
-          <div className="text-gray-500">Avg K (Last 4)</div>
-          <div>{pitcher.avg_k_last4?.toFixed(1) ?? "---"}</div>
-          <div className="text-gray-500">Rule 4</div>
-          <div>{b.rule4_last4_k} pts</div>
-        </div>
+          {Object.keys(breakdown).length === 0 && (
+            <li className="text-gray-500">No breakdown available</li>
+          )}
+        </ul>
       </div>
     </div>
   );
