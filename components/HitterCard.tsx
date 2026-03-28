@@ -1,99 +1,50 @@
+"use client";
+
 import Image from "next/image";
 import teamLogos from "@/data/teamLogos";
-import playerPhotos from "@/data/playerPhotos";
+import { playerPhotos } from "@/data/playerPhotos";
 import teamColors from "@/data/teamColors";
 
 interface HitterCardProps {
-  hitter: {
-    name: string;
-    avg: number;
-    hr: number;
-    rbi: number;
-    hitter_score: number;
-  };
-  team: string;
-  rank?: number;
+  hitter: any;
 }
 
-export default function HitterCard({ hitter, team, rank }: HitterCardProps) {
-  if (!hitter || !hitter.name) return null;
+export default function HitterCard({ hitter }: HitterCardProps) {
+  const photo =
+    playerPhotos[hitter.name] || playerPhotos["default"] || "/players/default.png";
 
-  const photo = playerPhotos[hitter.name] || playerPhotos.default;
-  const logo = teamLogos[team] || "/logos/default.png";
-  const color = teamColors[team] || "#555";
-
-  const scoreColor =
-    hitter.hitter_score >= 90
-      ? "bg-green-700"
-      : hitter.hitter_score >= 80
-      ? "bg-green-600"
-      : "bg-green-500";
+  const logo = teamLogos[hitter.team] || "/teams/default.png";
+  const color = teamColors[hitter.team] || "#444";
 
   return (
     <div
-      className="flex items-center justify-between bg-gray-900 border border-gray-800 rounded-xl p-4
-                 hover:bg-gray-850 hover:border-gray-700 hover:shadow-lg transition-all duration-150"
+      className="p-4 rounded-lg border border-gray-800 bg-[#111] flex items-center space-x-4"
       style={{ borderLeft: `4px solid ${color}` }}
     >
-      {/* Left side */}
-      <div className="flex items-center gap-4">
-        {rank !== undefined && (
-          <div className="text-gray-500 font-bold w-6 text-right">{rank}</div>
-        )}
-
-        <Image
-          src={photo}
-          alt={hitter.name}
-          width={48}
-          height={48}
-          className="rounded-full border border-gray-700 object-cover"
-        />
-
-        <div>
-          <div className="text-white font-semibold">{hitter.name}</div>
-
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
-            <span
-              className="w-2 h-2 rounded-full"
-              style={{ backgroundColor: color }}
-            ></span>
-
-            <Image
-              src={logo}
-              alt={team}
-              width={20}
-              height={20}
-              className="rounded-sm"
-            />
-
-            <span>{team}</span>
-          </div>
-        </div>
+      {/* Player Photo */}
+      <div className="relative w-16 h-16 rounded-full overflow-hidden border border-gray-700">
+        <Image src={photo} alt={hitter.name} fill sizes="64px" />
       </div>
 
-      {/* Right side */}
-      <div className="grid grid-cols-4 text-center w-[260px] text-sm">
-        <div>
-          <div className="font-mono text-gray-300">{hitter.avg.toFixed(3)}</div>
-          <div className="text-gray-500 text-xs">AVG</div>
+      <div className="flex-1">
+        {/* Name + Team */}
+        <div className="flex items-center space-x-2">
+          <h2 className="text-lg font-bold text-white">{hitter.name}</h2>
+          <Image
+            src={logo}
+            alt={hitter.team}
+            width={24}
+            height={24}
+            className="rounded-sm"
+          />
         </div>
 
-        <div>
-          <div className="font-mono text-gray-300">{hitter.hr}</div>
-          <div className="text-gray-500 text-xs">HR</div>
-        </div>
-
-        <div>
-          <div className="font-mono text-gray-300">{hitter.rbi}</div>
-          <div className="text-gray-500 text-xs">RBI</div>
-        </div>
-
-        <div>
-          <span
-            className={`${scoreColor} text-white px-3 py-1 rounded-lg font-bold`}
-          >
-            {hitter.hitter_score}
-          </span>
+        {/* Stats */}
+        <div className="text-gray-300 text-sm mt-1">
+          <p>AVG: {hitter.avg}</p>
+          <p>OBP: {hitter.obp}</p>
+          <p>SLG: {hitter.slg}</p>
+          <p>OPS: {hitter.ops}</p>
         </div>
       </div>
     </div>
